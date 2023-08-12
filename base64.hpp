@@ -30,35 +30,40 @@
    René Nyffenegger rene.nyffenegger@adp-gmbh.ch
 */
 /**
+ * Copyright (C) 2023 Kevin Heifner
+ *
  * Modified to be header only.
  * Templated for std::string, std::string_view, or std::vector<char> or other
  * char containers.
  */
 
-#parama once
+#pragma once
 
+#include <algorithm>
 #include <string>
 #include <string_view>
+#include <stdexcept>
 
 namespace code {
 
-std::string base64_encode(const std::string &s, bool url = false);
-std::string base64_encode_pem(const std::string &s);
-std::string base64_encode_mime(const std::string &s);
+inline std::string base64_encode(const std::string &s, bool url = false);
+inline std::string base64_encode_pem(const std::string &s);
+inline std::string base64_encode_mime(const std::string &s);
 
-std::string base64_decode(const std::string &s, bool remove_linebreaks = false);
-std::string base64_encode(unsigned const char *, size_t len, bool url = false);
+inline std::string base64_decode(const std::string &s, bool remove_linebreaks = false);
+inline std::string base64_encode(unsigned const char *, size_t len, bool url = false);
 
 //
 // Interface with std::string_view rather than const std::string&
 // Requires C++17
 // Provided by Yannic Bonenberger (https://github.com/Yannic)
 //
-std::string base64_encode(std::string_view s, bool url = false);
-std::string base64_encode_pem(std::string_view s);
-std::string base64_encode_mime(std::string_view s);
-std::string base64_decode(std::string_view s, bool remove_linebreaks = false);
+inline std::string base64_encode(std::string_view s, bool url = false);
+inline std::string base64_encode_pem(std::string_view s);
+inline std::string base64_encode_mime(std::string_view s);
+inline std::string base64_decode(std::string_view s, bool remove_linebreaks = false);
 
+namespace detail {
  //
  // Depending on the url parameter in base64_chars, one of
  // two sets of base64 characters needs to be chosen.
@@ -94,7 +99,7 @@ static const unsigned char from_base64_chars[256] = {
     64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64
 };
 
-static unsigned int pos_of_char(const unsigned char chr) {
+inline unsigned int pos_of_char(const unsigned char chr) {
  //
  // Return the position of chr within base64_encode()
  //
@@ -107,7 +112,7 @@ static unsigned int pos_of_char(const unsigned char chr) {
     throw std::runtime_error("Input is not valid base64-encoded data.");
 }
 
-static std::string insert_linebreaks(std::string str, size_t distance) {
+inline std::string insert_linebreaks(std::string str, size_t distance) {
  //
  // Provided by https://github.com/JomaCorpFX, adapted by me.
  //
@@ -126,26 +131,28 @@ static std::string insert_linebreaks(std::string str, size_t distance) {
 }
 
 template <typename String, unsigned int line_length>
-static std::string encode_with_line_breaks(String s) {
+inline std::string encode_with_line_breaks(String s) {
   return insert_linebreaks(base64_encode(s, false), line_length);
 }
 
 template <typename String>
-static std::string encode_pem(String s) {
+inline std::string encode_pem(String s) {
   return encode_with_line_breaks<String, 64>(s);
 }
 
 template <typename String>
-static std::string encode_mime(String s) {
+inline std::string encode_mime(String s) {
   return encode_with_line_breaks<String, 76>(s);
 }
 
 template <typename String>
-static std::string encode(String s, bool url) {
+inline std::string encode(String s, bool url) {
   return base64_encode(reinterpret_cast<const unsigned char*>(s.data()), s.length(), url);
 }
 
-std::string base64_encode(unsigned char const* bytes_to_encode, size_t in_len, bool url) {
+} // namespace detail
+
+inline std::string base64_encode(unsigned char const* bytes_to_encode, size_t in_len, bool url) {
 
     size_t len_encoded = (in_len +2) / 3 * 4;
 
@@ -160,7 +167,7 @@ std::string base64_encode(unsigned char const* bytes_to_encode, size_t in_len, b
  // the correct character set is chosen by subscripting
  // base64_chars with url.
  //
-    const char* base64_chars_ = to_base64_chars[url];
+    const char* base64_chars_ = detail::to_base64_chars[url];
 
     std::string ret;
     ret.reserve(len_encoded);
@@ -196,8 +203,10 @@ std::string base64_encode(unsigned char const* bytes_to_encode, size_t in_len, b
     return ret;
 }
 
+namespace detail {
+
 template <typename String>
-static std::string decode(String const& encoded_string, bool remove_linebreaks) {
+inline std::string decode(String const& encoded_string, bool remove_linebreaks) {
  //
  // decode(…) is templated so that it can be used with String = const std::string&
  // or std::string_view (requires at least C++17)
@@ -277,46 +286,45 @@ static std::string decode(String const& encoded_string, bool remove_linebreaks) 
     return ret;
 }
 
-std::string base64_decode(std::string const& s, bool remove_linebreaks) {
-   return decode(s, remove_linebreaks);
+} // namespace detail
+
+inline std::string base64_decode(std::string const& s, bool remove_linebreaks) {
+   return detail::decode(s, remove_linebreaks);
 }
 
-std::string base64_encode(std::string const& s, bool url) {
-   return encode(s, url);
+inline std::string base64_encode(std::string const& s, bool url) {
+   return detail::encode(s, url);
 }
 
-std::string base64_encode_pem (std::string const& s) {
-   return encode_pem(s);
+inline std::string base64_encode_pem (std::string const& s) {
+   return detail::encode_pem(s);
 }
 
-std::string base64_encode_mime(std::string const& s) {
-   return encode_mime(s);
+inline std::string base64_encode_mime(std::string const& s) {
+   return detail::encode_mime(s);
 }
 
-#if __cplusplus >= 201703L
 //
 // Interface with std::string_view rather than const std::string&
 // Requires C++17
 // Provided by Yannic Bonenberger (https://github.com/Yannic)
 //
 
-std::string base64_encode(std::string_view s, bool url) {
-   return encode(s, url);
+inline std::string base64_encode(std::string_view s, bool url) {
+   return detail::encode(s, url);
 }
 
-std::string base64_encode_pem(std::string_view s) {
-   return encode_pem(s);
+inline std::string base64_encode_pem(std::string_view s) {
+   return detail::encode_pem(s);
 }
 
-std::string base64_encode_mime(std::string_view s) {
-   return encode_mime(s);
+inline std::string base64_encode_mime(std::string_view s) {
+   return detail::encode_mime(s);
 }
 
-std::string base64_decode(std::string_view s, bool remove_linebreaks) {
-   return decode(s, remove_linebreaks);
+inline std::string base64_decode(std::string_view s, bool remove_linebreaks) {
+   return detail::decode(s, remove_linebreaks);
 }
-
-#endif  // __cplusplus >= 201703L
 
 
 } // namespace code

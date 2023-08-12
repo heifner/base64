@@ -1,5 +1,16 @@
-#include "base64.h"
+#include "base64.hpp"
 #include <iostream>
+
+size_t error_count = 0;
+
+void report_error(const char* assertion, const char* file, int line) {
+    if(error_count <= 20) {
+       printf("%s:%d: failed %s\n", file, line, assertion);
+    }
+    ++error_count;
+}
+
+#define CHECK(...) do { if(__VA_ARGS__) {} else { report_error(#__VA_ARGS__, __FILE__, __LINE__); } } while(0)
 
 int main() {
 

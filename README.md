@@ -4,4 +4,7 @@ Base64 encoding and decoding with c++
 
 ## See also
 
-https://renenyffenegger.ch/notes/development/Base64/Encoding-and-decoding-base-64-with-cpp
+Fork of https://github.com/ReneNyffenegger/cpp-base64 with additions.
+* Header Only
+* Templated for std::string and std::vector<char> or other container of char types
+* Performance improvements

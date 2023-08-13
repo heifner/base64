@@ -1,8 +1,10 @@
-#include "base64.h"
+#include "base64.hpp"
 #include <iostream>
 #include <chrono>
 
 int main() {
+
+  using namespace code;
 
     const std::string lorem_ipsum =
       "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus consectetur\n"

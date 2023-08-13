@@ -181,7 +181,7 @@ int main() {
    //
    // Test the string_view interface (which required C++17)
    //
-   std::string_view sv_orig    = "foobarbaz";
+   std::string_view sv_orig = "foobarbaz";
    std::string sv_encoded = base64_encode(sv_orig);
 
    CHECK(sv_encoded == "Zm9vYmFyYmF6");
@@ -189,6 +189,35 @@ int main() {
    std::string sv_decoded = base64_decode(sv_encoded);
 
    CHECK(sv_decoded == sv_orig);
+
+   {
+      // Test std::vector<char> with std::string
+      std::string s_orig = "foobarbaz";
+      std::vector<char> s_encoded = base64_encode<std::vector<char>>(s_orig);
+      std::string s_decoded = base64_decode<std::string>(s_encoded);
+      CHECK(s_orig == s_decoded);
+   }
+   {
+      // Test std::vector<char> with std::vector<char>
+      std::vector<char> s_orig = {'f', 'o', 'o'};
+      std::vector<char> s_encoded = base64_encode<std::vector<char>>(s_orig);
+      std::vector<char> s_decoded = base64_decode<std::vector<char>>(s_encoded);
+      CHECK(s_orig == s_decoded);
+   }
+   {
+      // Test std::vector<char> with std::string
+      std::vector<char> s_orig = {'f', 'o', 'o'};
+      std::string s_encoded = base64_encode<std::string>(s_orig);
+      std::vector<char> s_decoded = base64_decode<std::vector<char>>(s_encoded);
+      CHECK(s_orig == s_decoded);
+   }
+   {
+      // Test std::vector<char> with std::string_view
+      std::string_view s_orig = "foobarbaz";
+      std::vector<char> s_encoded = base64_encode<std::vector<char>>(s_orig);
+      std::string s_decoded = base64_decode<std::string>(s_encoded);
+      CHECK(s_orig == s_decoded);
+   }
 
    if (error_count == 0)
       std::cout << "Success" << std::endl;

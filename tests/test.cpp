@@ -48,16 +48,19 @@ int main() {
      auto input = "YWJjMTIzJCYoKSc/tPUB+n5h========="s;
      auto expected_output = "abc123$&()'?\xb4\xf5\x01\xfa~a"s;
 
-     try {
-       base64_decode(input);
-       CHECK(false);
-     } catch(const std::exception&) {}
+     CHECK(expected_output == base64_decode(input));
   }
   {
-     auto input = "YWJjMTIzJCYoKSc/tPU$B+n5h="s;
+     auto input = "YWJjMTIzJCYoKSc/tPUB+n5h="s;
+     auto expected_output = "abc123$&()'?\xb4\xf5\x01\xfa~a"s;
+
+     CHECK(expected_output == base64_decode(input));
+  }
+  {
+     auto input = "YWJjMTIzJCYoKSc/tPU$B+n5h="s; // $ in input
      try {
-       base64_decode(input);
-       CHECK(false);
+        base64_decode(input);
+        CHECK(false);
      } catch(const std::exception&) {}
   }
 
@@ -123,7 +126,7 @@ int main() {
    std::string a17_encoded_url = base64_encode(a17_orig, true);
 
    CHECK(a17_encoded == "YWFhYWFhYWFhYWFhYWFhYWE=");
-   CHECK(a17_encoded_url == "YWFhYWFhYWFhYWFhYWFhYWE.");
+   CHECK(a17_encoded_url == "YWFhYWFhYWFhYWFhYWFhYWE");
    CHECK(base64_decode(a17_encoded_url) == a17_orig);
    CHECK(base64_decode(a17_encoded) == a17_orig);
 
@@ -137,7 +140,7 @@ int main() {
    std::string s_6364_encoded_url = base64_encode(s_6364, true);
 
    CHECK(s_6364_encoded == "A+//+Q==");
-   CHECK(s_6364_encoded_url == "A-__-Q..");
+   CHECK(s_6364_encoded_url == "A-__-Q");
    CHECK(base64_decode(s_6364_encoded) == s_6364);
    CHECK(base64_decode(s_6364_encoded_url) == s_6364);
 
